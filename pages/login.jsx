@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Layout from "../components/layout/layout";
 import Router from "next/router";
+import Head from "next/head";
 import { Container, Button, Form } from "react-bootstrap";
 import { useState, useRef } from "react";
 
@@ -13,6 +14,8 @@ export default function Login() {
       return document.getElementById("myForm").reportValidity();
     fetch("http://" + process.env.api + "/v1/user/login", {
       method: "POST",
+      credentials: "include",
+      mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email,
@@ -25,6 +28,9 @@ export default function Login() {
 
   return (
     <Layout>
+      <Head>
+        <title>Login</title>
+      </Head>
       <Container
         fluid={true}
         className="d-flex justify-content-center pt-3"
