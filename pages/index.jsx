@@ -12,10 +12,8 @@ export default function Home() {
 
   const updatePortfolioList = () => {
     console.log("Fetching virtual portfolio list");
-    fetch("http://" + process.env.api + "/v1/user/listVirtualPortfolios", {
+    fetch("/v1/user/listVirtualPortfolios", {
       method: "GET",
-      credentials: "include",
-      mode: "cors",
     })
       .then((res) => res.json())
       .then((portfolios) => {
@@ -42,15 +40,12 @@ export default function Home() {
       .filter((key) => params[key] != undefined)
       .map((key) => `${key}=${params[key]}`)
       .join("&");
-    fetch(
-      "http://" + process.env.api + "/v1/user/listTransactions?" + queryParams,
-      {
-        method: "GET",
-        credentials: "include",
-        mode: "cors",
-        params: { srcCurrency: srcCurrency, destCurrency: destCurrency },
-      }
-    )
+    fetch("/v1/user/listTransactions?" + queryParams, {
+      method: "GET",
+      credentials: "include",
+      mode: "cors",
+      params: { srcCurrency: srcCurrency, destCurrency: destCurrency },
+    })
       .then((res) => res.json())
       .then((data) => {
         console.log("Transactions fetched");

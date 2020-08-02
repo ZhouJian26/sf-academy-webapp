@@ -12,10 +12,8 @@ export default function Login() {
   const singupClick = () => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
-    fetch("http://" + process.env.api + "/v1/user/login", {
+    fetch("/v1/user/login", {
       method: "POST",
-      credentials: "include",
-      mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email,

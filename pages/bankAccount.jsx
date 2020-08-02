@@ -14,22 +14,14 @@ export default function BankAccount() {
   const transact = (isDeposit) => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
-    fetch(
-      "http://" +
-        process.env.api +
-        "/v1/user/" +
-        (isDeposit ? "deposit" : "withdraw"),
-      {
-        method: "PUT",
-        credentials: "include",
-        mode: "cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: parseFloat(parseFloat(amount).toFixed(2)),
-          currency: currency,
-        }),
-      }
-    );
+    fetch("/v1/user/" + (isDeposit ? "deposit" : "withdraw"), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: parseFloat(parseFloat(amount).toFixed(2)),
+        currency: currency,
+      }),
+    });
   };
   useEffect(() => {}, []);
 

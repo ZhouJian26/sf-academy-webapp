@@ -20,10 +20,8 @@ export default function Signup() {
   const singupClick = () => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
-    fetch("http://" + process.env.api + "/v1/user/signup", {
+    fetch("/v1/user/signup", {
       method: "POST",
-      credentials: "include",
-      mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email,

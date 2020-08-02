@@ -23,7 +23,7 @@ export default function Buy() {
     )
       return;
     setBuyStatus(true);
-    fetch("http://" + process.env.api + "/v1/user/buy", {
+    fetch("/v1/user/buy", {
       method: "POST",
       credentials: "include",
       mode: "cors",
