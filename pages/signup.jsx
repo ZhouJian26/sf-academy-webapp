@@ -4,6 +4,7 @@ import Router from "next/router";
 import { Container, Button, Form } from "react-bootstrap";
 import { useState, useRef } from "react";
 
+import Head from "next/head";
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +22,8 @@ export default function Signup() {
       return document.getElementById("myForm").reportValidity();
     fetch("http://" + process.env.api + "/v1/user/signup", {
       method: "POST",
+      credentials: "include",
+      mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email,
@@ -35,6 +38,9 @@ export default function Signup() {
 
   return (
     <Layout>
+      <Head>
+        <title>Signup</title>
+      </Head>
       <Container
         fluid={true}
         className="d-flex justify-content-center pt-3"
