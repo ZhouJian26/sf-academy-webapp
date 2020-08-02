@@ -25,8 +25,6 @@ export default function Buy() {
     setBuyStatus(true);
     fetch("/v1/user/buy", {
       method: "POST",
-      credentials: "include",
-      mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: parseFloat(parseFloat(amount).toFixed(2)),
