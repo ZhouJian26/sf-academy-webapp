@@ -2,25 +2,31 @@ import Link from "next/link";
 import Layout from "../components/layout/layout";
 import Router from "next/router";
 import Head from "next/head";
-import { Container, Button, Form } from "react-bootstrap";
+import { Container, Button, Form, Alert } from "react-bootstrap";
 import { useState, useRef } from "react";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const refs = [useRef(null), useRef(null), useRef(null)];
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  });
+  const [isError, setIsError] = useState(false);
+  const refs = Array(3)
+    .fill()
+    .map(() => useRef(null));
+
   const singupClick = () => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
     fetch("/v1/user/login", {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: email,
-        password: password,
+        email: user.email,
+        password: user.password,
       }),
     }).then((response) => {
-      if (response.status == 200) return Router.push("/");
+      response.status == 200 ? Router.push("/") : setIsError(true);
     });
   };
 
@@ -37,16 +43,22 @@ export default function Login() {
           paddingBottom: "10%",
         }}
       >
-        <Form className="d-flex flex-column justify-content-center" id="myForm">
-          <h1 className="text-center">Sign Up</h1>
+        <Form
+          className="d-flex flex-column justify-content-center"
+          id="myForm"
+          onClick={() => setIsError(false)}
+        >
+          <h1 className="text-center">Login</h1>
           <Form.Group controlId="formEmail">
             <Form.Label>Email</Form.Label>
             <Form.Control
               ref={refs[0]}
               type="email"
               placeholder="Email"
-              value={email}
-              onChange={(el) => setEmail(el.target.value)}
+              value={user.email}
+              onChange={(el) =>
+                setUser(Object.assign({ ...user }, { email: el.target.value }))
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[1].current.focus() : ""
               }
@@ -60,15 +72,23 @@ export default function Login() {
               ref={refs[1]}
               type="password"
               placeholder="Password"
-              value={password}
-              onChange={(el) => setPassword(el.target.value)}
+              value={user.password}
+              onChange={(el) =>
+                setUser(
+                  Object.assign({ ...user }, { password: el.target.value })
+                )
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[2].current.focus() : ""
               }
-              autoFocus
               required
             />
           </Form.Group>
+          {isError ? (
+            <Alert variant="danger">Incorrect credentials.</Alert>
+          ) : (
+            ""
+          )}
           <Button ref={refs[2]} variant="primary" onClick={singupClick}>
             Login
           </Button>

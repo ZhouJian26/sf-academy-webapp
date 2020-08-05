@@ -1,32 +1,53 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useState } from "react";
-import Layout from "../components/layout/layout";
-import { Container, Form, Button } from "react-bootstrap";
+import Dashboard from "../components/layout/Dashboard";
+import { Container, Form, Button, Alert } from "react-bootstrap";
 
 import Head from "next/head";
 const currencyAllowed = ["EUR", "USD"];
 
 export default function BankAccount() {
-  const [amount, setAmount] = useState(0);
-  const [currency, setCurrency] = useState("EUR");
-  const refs = [useRef(null), useRef(null)];
+  const [transferRequest, setTransferRequest] = useState({
+    amount: 0,
+    currency: "EUR",
+    isPending: false,
+    isError: false,
+    isSuccess: false,
+  });
+  const refs = Array(2)
+    .fill()
+    .map(() => useRef(null));
 
   const transact = (isDeposit) => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
+    if (transferRequest.isPending) return;
+    setTransferRequest(
+      Object.assign({ ...transferRequest }, { isPending: true })
+    );
     fetch("/v1/user/" + (isDeposit ? "deposit" : "withdraw"), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: parseFloat(parseFloat(amount).toFixed(2)),
-        currency: currency,
+        amount: parseFloat(parseFloat(transferRequest.amount).toFixed(2)),
+        currency: transferRequest.currency,
       }),
-    });
+    }).then((res) =>
+      setTransferRequest(
+        Object.assign(
+          { ...transferRequest },
+          {
+            isPending: false,
+            isSuccess: res.status == 200,
+            isError: res.status != 200,
+          }
+        )
+      )
+    );
   };
-  useEffect(() => {}, []);
 
   return (
-    <Layout>
+    <Dashboard>
       <Head>
         <title>Bank Account</title>
       </Head>
@@ -38,7 +59,21 @@ export default function BankAccount() {
           paddingBottom: "10%",
         }}
       >
-        <Form className="d-flex flex-column justify-content-center" id="myForm">
+        <Form
+          className="d-flex flex-column justify-content-center"
+          id="myForm"
+          onClick={() =>
+            setTransferRequest(
+              Object.assign(
+                { ...transferRequest },
+                {
+                  isSuccess: false,
+                  isError: false,
+                }
+              )
+            )
+          }
+        >
           <h1 className="text-center">Transfer</h1>
           <Form.Group controlId="formAmount">
             <Form.Label>Amount</Form.Label>
@@ -48,10 +83,15 @@ export default function BankAccount() {
               placeholder="Amount"
               min={0.01}
               step={0.01}
-              value={amount}
+              value={transferRequest.amount}
               onChange={(el) => {
                 if (isNaN(parseFloat(el.target.value))) return;
-                setAmount(el.target.value);
+                setTransferRequest(
+                  Object.assign(
+                    { ...transferRequest },
+                    { amount: el.target.value }
+                  )
+                );
               }}
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[1].current.focus() : ""
@@ -64,7 +104,14 @@ export default function BankAccount() {
             <Form.Label>Currency</Form.Label>
             <Form.Control
               ref={refs[1]}
-              onChange={(el) => setCurrency(el.target.value)}
+              onChange={(el) =>
+                setTransferRequest(
+                  Object.assign(
+                    { ...transferRequest },
+                    { currency: el.target.value }
+                  )
+                )
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[0].current.focus() : ""
               }
@@ -76,6 +123,16 @@ export default function BankAccount() {
               ))}
             </Form.Control>
           </Form.Group>
+          {transferRequest.isError ? (
+            <Alert variant="danger">Operation failed.</Alert>
+          ) : (
+            ""
+          )}
+          {transferRequest.isSuccess ? (
+            <Alert variant="success">Operation success.</Alert>
+          ) : (
+            ""
+          )}
           <Button
             variant="primary"
             onClick={() => {
@@ -95,6 +152,6 @@ export default function BankAccount() {
           </Button>
         </Form>
       </Container>
-    </Layout>
+    </Dashboard>
   );
 }

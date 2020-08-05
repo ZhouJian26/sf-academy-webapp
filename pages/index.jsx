@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import TransactionsView from "../components/transactionsView";
 import PortfoliosView from "../components/portfoliosView";
-import Layout from "../components/layout/layout";
+import Dashboard from "../components/layout/Dashboard";
 
 import Head from "next/head";
+
 export default function Home() {
   const [virtualPortfoliosList, setVirtualPortfoliosList] = useState([]);
   const [transactionsList, setTransactionsList] = useState([]);
-  const [transactionFilter, setTransactionFilter] = useState({});
 
   const updatePortfolioList = () => {
     console.log("Fetching virtual portfolio list");
@@ -17,12 +17,12 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((portfolios) => {
-        console.log("Virtual portfolio fetched");
-        console.log(portfolios);
-        const { listVirtualPortfolio } = portfolios;
+        const { listVirtualPortfolio, status } = portfolios;
+        if (status != 200) return;
         setVirtualPortfoliosList(listVirtualPortfolio);
       });
   };
+
   const updateTransactionList = (
     srcCurrency,
     destCurrency,
@@ -36,21 +36,19 @@ export default function Home() {
       startDate: startDate,
       endDate: endDate,
     };
+    console.log(startDate);
     const queryParams = Object.keys(params)
       .filter((key) => params[key] != undefined)
       .map((key) => `${key}=${params[key]}`)
       .join("&");
     fetch("/v1/user/listTransactions?" + queryParams, {
       method: "GET",
-      credentials: "include",
-      mode: "cors",
       params: { srcCurrency: srcCurrency, destCurrency: destCurrency },
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Transactions fetched");
-        console.log(data);
-        let { transactions } = data;
+        let { transactions, status } = data;
+        if (status != 200) return;
         transactions.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
@@ -62,14 +60,21 @@ export default function Home() {
     updatePortfolioList();
     updateTransactionList();
   }, []);
-
-  const testFunc = (e) => {
-    console.log("triggerd");
-    console.log(e);
+  const setFilter = ({ startDate, endDate, srcCurrency, destCurrency }) => {
+    updateTransactionList(
+      srcCurrency,
+      destCurrency,
+      startDate != undefined
+        ? new Date(startDate).toISOString().slice(0, 19).replace("T", " ")
+        : undefined,
+      endDate != undefined
+        ? new Date(endDate).toISOString().slice(0, 19).replace("T", " ")
+        : undefined
+    );
   };
 
   return (
-    <Layout>
+    <Dashboard>
       <Head>
         <title>Home</title>
       </Head>
@@ -82,8 +87,9 @@ export default function Home() {
         <PortfoliosView portfoliosList={virtualPortfoliosList}></PortfoliosView>
         <TransactionsView
           transactionsList={transactionsList}
+          setFilterFunction={setFilter}
         ></TransactionsView>
       </Container>
-    </Layout>
+    </Dashboard>
   );
 }

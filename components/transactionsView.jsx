@@ -1,9 +1,13 @@
 import { Container, Card, CardDeck } from "react-bootstrap";
 import TransactionFilter from "./transactionFilter";
-const TransactionsView = ({ transactionsList, setFilter }) => {
+const TransactionsView = ({ transactionsList, setFilterFunction }) => {
   return (
     <Container>
       <h1>Transactions</h1>
+      <TransactionFilter
+        setFilterFunction={setFilterFunction}
+      ></TransactionFilter>
+      {transactionsList.length == 0 ? <p>No transactions.</p> : ""}
       <CardDeck className="justify-content-around">
         {transactionsList.map((transaction, index) => (
           <Card

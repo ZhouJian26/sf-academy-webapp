@@ -1,22 +1,23 @@
 import Link from "next/link";
 import Layout from "../components/layout/layout";
 import Router from "next/router";
-import { Container, Button, Form } from "react-bootstrap";
+import { Container, Button, Form, Alert } from "react-bootstrap";
 import { useState, useRef } from "react";
 
 import Head from "next/head";
 export default function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [iban, setIban] = useState("");
-  const refs = [
-    useRef(null),
-    useRef(null),
-    useRef(null),
-    useRef(null),
-    useRef(null),
-  ];
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+    username: "",
+    iban: "",
+  });
+  const [isRepeted, setIsRepeted] = useState(false);
+
+  const refs = Array(5)
+    .fill()
+    .map(() => useRef(null));
+
   const singupClick = () => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
@@ -24,13 +25,13 @@ export default function Signup() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: email,
-        password: password,
-        iban: iban,
-        username: username,
+        email: user.email,
+        password: user.password,
+        iban: user.iban,
+        username: user.username,
       }),
     }).then((response) => {
-      if (response.status == 200) return Router.push("/");
+      response.status == 200 ? Router.push("/") : setIsRepeted(true);
     });
   };
 
@@ -47,7 +48,11 @@ export default function Signup() {
           paddingBottom: "10%",
         }}
       >
-        <Form className="d-flex flex-column justify-content-center" id="myForm">
+        <Form
+          className="d-flex flex-column justify-content-center"
+          id="myForm"
+          onClick={() => setIsRepeted(false)}
+        >
           <h1 className="text-center">Sign Up</h1>
           <Form.Group controlId="formEmail">
             <Form.Label>Email</Form.Label>
@@ -55,8 +60,10 @@ export default function Signup() {
               ref={refs[0]}
               type="email"
               placeholder="Email"
-              value={email}
-              onChange={(el) => setEmail(el.target.value)}
+              value={user.email}
+              onChange={(el) =>
+                setUser(Object.assign({ ...user }, { email: el.target.value }))
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[1].current.focus() : ""
               }
@@ -70,8 +77,12 @@ export default function Signup() {
               ref={refs[1]}
               type="password"
               placeholder="Password"
-              value={password}
-              onChange={(el) => setPassword(el.target.value)}
+              value={user.password}
+              onChange={(el) =>
+                setUser(
+                  Object.assign({ ...user }, { password: el.target.value })
+                )
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[2].current.focus() : ""
               }
@@ -85,8 +96,12 @@ export default function Signup() {
               ref={refs[2]}
               type="text"
               placeholder="Username"
-              value={username}
-              onChange={(el) => setUsername(el.target.value)}
+              value={user.username}
+              onChange={(el) =>
+                setUser(
+                  Object.assign({ ...user }, { username: el.target.value })
+                )
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[3].current.focus() : ""
               }
@@ -100,8 +115,10 @@ export default function Signup() {
               ref={refs[3]}
               type="text"
               placeholder="Iban"
-              value={iban}
-              onChange={(el) => setIban(el.target.value)}
+              value={user.iban}
+              onChange={(el) =>
+                setUser(Object.assign({ ...user }, { iban: el.target.value }))
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[4].current.focus() : ""
               }
@@ -109,6 +126,7 @@ export default function Signup() {
               required
             />
           </Form.Group>
+          {isRepeted ? <Alert variant="danger">Email not available</Alert> : ""}
           <Button ref={refs[4]} variant="primary" onClick={singupClick}>
             Sign Up
           </Button>

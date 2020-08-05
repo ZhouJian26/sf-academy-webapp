@@ -3,6 +3,7 @@ const PortfoliosView = ({ portfoliosList }) => {
   return (
     <Container>
       <h1>Virtual Portfolio</h1>
+      {portfoliosList.length == 0 ? <p>No virtual portfolio available.</p> : ""}
       <CardDeck>
         {portfoliosList.map((portfolio, index) => (
           <Card

@@ -1,42 +1,58 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useState } from "react";
-import Layout from "../components/layout/layout";
-import { Container, Form, Button, Spinner } from "react-bootstrap";
+import Dashboard from "../components/layout/Dashboard";
+import { Container, Form, Button, Spinner, Alert } from "react-bootstrap";
 
 import Head from "next/head";
 const currencyAllowed = ["EUR", "USD"];
 
 export default function Buy() {
-  const [amount, setAmount] = useState(0);
-  const [srcCurrency, setSrcCurrency] = useState("EUR");
-  const [destCurrency, setDestCurrency] = useState("USD");
-  const [buyStatus, setBuyStatus] = useState(false);
-  const refs = [useRef(null), useRef(null), useRef(null)];
+  const [buyRequest, setBuyRequest] = useState({
+    amount: 0,
+    srcCurrency: "EUR",
+    destCurrency: "EUR",
+    isError: false,
+    isSuccess: false,
+    isPending: false,
+  });
+  const refs = Array(3)
+    .fill()
+    .map(() => useRef(null));
 
   const buy = () => {
     if (!document.getElementById("myForm").checkValidity())
       return document.getElementById("myForm").reportValidity();
+
     if (
-      !currencyAllowed.includes(srcCurrency) ||
-      !currencyAllowed.includes(destCurrency) ||
-      buyStatus
+      !currencyAllowed.includes(buyRequest.srcCurrency) ||
+      !currencyAllowed.includes(buyRequest.destCurrency) ||
+      buyRequest.isPending
     )
       return;
-    setBuyStatus(true);
+    setBuyRequest(Object.assign({ ...buyRequest }, { isPending: true }));
     fetch("/v1/user/buy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: parseFloat(parseFloat(amount).toFixed(2)),
-        srcCurrency: srcCurrency,
-        destCurrency: destCurrency,
+        amount: parseFloat(parseFloat(buyRequest.amount).toFixed(2)),
+        srcCurrency: buyRequest.srcCurrency,
+        destCurrency: buyRequest.destCurrency,
       }),
-    }).then((res) => setBuyStatus(false));
+    }).then((res) =>
+      setBuyRequest(
+        Object.assign(
+          { ...buyRequest },
+          {
+            isPending: false,
+            isSuccess: res.status == 200,
+            isError: res.status != 200,
+          }
+        )
+      )
+    );
   };
-  useEffect(() => {}, []);
-
   return (
-    <Layout>
+    <Dashboard>
       <Head>
         <title>Buy</title>
       </Head>
@@ -48,7 +64,18 @@ export default function Buy() {
           paddingBottom: "10%",
         }}
       >
-        <Form className="d-flex flex-column justify-content-center" id="myForm">
+        <Form
+          className="d-flex flex-column justify-content-center"
+          id="myForm"
+          onClick={() =>
+            setBuyRequest(
+              Object.assign(
+                { ...buyRequest },
+                { isError: false, isSuccess: false }
+              )
+            )
+          }
+        >
           <h1 className="text-center">Buy</h1>
           <Form.Group controlId="formAmount">
             <Form.Label>Amount</Form.Label>
@@ -58,10 +85,12 @@ export default function Buy() {
               placeholder="Amount"
               min={0.01}
               step={0.01}
-              value={amount}
+              value={buyRequest.amount}
               onChange={(el) => {
                 if (isNaN(parseFloat(el.target.value))) return;
-                setAmount(el.target.value);
+                setBuyRequest(
+                  Object.assign({ ...buyRequest }, { amount: el.target.value })
+                );
               }}
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[1].current.focus() : ""
@@ -74,7 +103,14 @@ export default function Buy() {
             <Form.Label>Start Currency</Form.Label>
             <Form.Control
               ref={refs[1]}
-              onChange={(el) => setSrcCurrency(el.target.value)}
+              onChange={(el) =>
+                setBuyRequest(
+                  Object.assign(
+                    { ...buyRequest },
+                    { srcCurrency: el.target.value }
+                  )
+                )
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[2].current.focus() : ""
               }
@@ -90,7 +126,14 @@ export default function Buy() {
             <Form.Label>End Currency</Form.Label>
             <Form.Control
               ref={refs[2]}
-              onChange={(el) => setDestCurrency(el.target.value)}
+              onChange={(el) =>
+                setBuyRequest(
+                  Object.assign(
+                    { ...buyRequest },
+                    { destCurrency: el.target.value }
+                  )
+                )
+              }
               onKeyPress={(event) =>
                 event.key == "Enter" ? refs[0].current.focus() : ""
               }
@@ -102,7 +145,17 @@ export default function Buy() {
               ))}
             </Form.Control>
           </Form.Group>
-          {buyStatus ? (
+          {buyRequest.isError ? (
+            <Alert variant="danger">Operation failed.</Alert>
+          ) : (
+            ""
+          )}
+          {buyRequest.isSuccess ? (
+            <Alert variant="success">Operation success.</Alert>
+          ) : (
+            ""
+          )}
+          {buyRequest.isPending ? (
             <Button variant="primary">
               <Spinner animation="border" variant="light" />
             </Button>
@@ -113,6 +166,6 @@ export default function Buy() {
           )}
         </Form>
       </Container>
-    </Layout>
+    </Dashboard>
   );
 }

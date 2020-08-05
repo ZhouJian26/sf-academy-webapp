@@ -14,23 +14,7 @@ const Layout = ({ children }) => (
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </Head>
     <Navbar bg="light" sticky="top" className="justify-content-center">
-      <Nav>
-        <Nav.Item className="mx-3">
-          <Link href="/">
-            <a>Home</a>
-          </Link>
-        </Nav.Item>
-        <Nav.Item className="mx-3">
-          <Link href="/buy">
-            <a>Buy</a>
-          </Link>
-        </Nav.Item>
-        <Nav.Item className="mx-3">
-          <Link href="/bankAccount">
-            <a>Transfer</a>
-          </Link>
-        </Nav.Item>
-      </Nav>
+      <Navbar.Brand>Exchange App</Navbar.Brand>
     </Navbar>
     <main>{children}</main>
     <footer>
