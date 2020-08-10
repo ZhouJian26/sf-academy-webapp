@@ -17,8 +17,8 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((portfolios) => {
-        const { listVirtualPortfolio, status } = portfolios;
-        if (status != 200) return;
+        const { listVirtualPortfolio } = portfolios;
+        if (listVirtualPortfolio == undefined) return;
         setVirtualPortfoliosList(listVirtualPortfolio);
       });
   };
@@ -47,8 +47,8 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
-        let { transactions, status } = data;
-        if (status != 200) return;
+        let { transactions } = data;
+        if (transactions == undefined) return;
         transactions.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
