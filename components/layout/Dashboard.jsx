@@ -9,7 +9,7 @@ const Dashboard = ({ children }) => {
     fetch("/v1/user/ping")
       .then((res) => res.json())
       .then((res) => (res.status == 401 ? Router.push("/login") : ""));
-  });
+  }, []);
   return (
     <Fragment>
       <Head>
